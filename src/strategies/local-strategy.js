@@ -1,18 +1,21 @@
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
-const { mockUsers } = require("../utils/data");
+const { User } = require("../schema/user");
+const { comparePassword } = require("../utils/helpers");
 
 passport.serializeUser((user, done) => {
   console.log("inside serializer");
   console.log(user);
-  done(null, user.id);
+  done(null, user._id.toString());
 });
 
-passport.deserializeUser((id, done) => {
+passport.deserializeUser(async (_id, done) => {
   console.log("inside deserializer");
   try {
-    const findUser = mockUsers.find((user) => user.id === id);
-    if (!findUser) throw new Error("User Not Found");
+    const findUser = await User.findById(_id);
+    if (!findUser) {
+      throw new Error("User was not found");
+    }
     done(null, findUser);
   } catch (err) {
     done(err, null);
@@ -20,17 +23,13 @@ passport.deserializeUser((id, done) => {
 });
 
 passport.use(
-  new LocalStrategy((username, password, done) => {
-    console.log(username, password);
+  new LocalStrategy(async (username, password, done) => {
     try {
-      const findUser = mockUsers.find((user) => user.username === username);
+      const findUser = await User.findOne({ username: username });
+      if (!findUser) throw new Error("User was not found");
+      const compare = comparePassword(password, findUser.password);
 
-      if (!findUser) {
-        throw new Error("User not found");
-      }
-      if (findUser.password !== password) {
-        throw new Error("Invalid Credentials");
-      }
+      if (!compare) throw new Error("Invalid Credentials");
 
       done(null, findUser);
     } catch (err) {

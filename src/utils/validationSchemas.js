@@ -15,6 +15,14 @@ const createUserValidationSchema = {
       errorMessage: "username should be a string",
     },
   },
+  password: {
+    notEmpty: {
+      errorMessage: "password should not be empty",
+    },
+    isString: {
+      errorMessage: "password should be a string",
+    },
+  },
   email: {
     notEmpty: {
       errorMessage: "email should not be empty",

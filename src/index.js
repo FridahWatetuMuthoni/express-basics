@@ -48,11 +48,15 @@ app.get("/", (req, res) => {
   res.send(data);
 });
 
-app.post("/api/auth", passport.authenticate("local"), (request, response) => {
-  response.sendStatus(200);
-});
+app.post(
+  "/api/users/login",
+  passport.authenticate("local"),
+  (request, response) => {
+    response.status(200).send(request.user);
+  }
+);
 
-app.post("/api/auth/logout", (request, response) => {
+app.post("/api/users/logout", (request, response) => {
   if (!request.user) return response.sendStatus(401);
   request.logout((err) => {
     if (err) {
@@ -63,7 +67,7 @@ app.post("/api/auth/logout", (request, response) => {
   });
 });
 
-app.get("/api/auth/status", (request, response) => {
+app.get("/api/users/status", (request, response) => {
   console.log(`Inside /auth/status endpoint`);
   console.log(request.user);
   return request.user ? response.send(request.user) : response.sendStatus(401);
