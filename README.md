@@ -105,6 +105,20 @@ app.get("/", homeMiddleware, (req, res) => {
   res.send("hello world");
 });
 
+/*================== AUTHENTICATION ==================*/
+
+app.post("/api/auth", (request, response) => {
+  const {
+    body: { username, password },
+  } = request;
+  const findUser = mockUsers.find((user) => user.username === username);
+  if (!findUser || findUser.password !== password) {
+    return response.status(401).send({ err: "BAD CREDENTIALS" });
+  }
+  request.session.user = findUser;
+  return response.status(200).send(findUser);
+});
+
 /*================== HANDLING ERRORS ==================*/
 
 // 404 ERROR
