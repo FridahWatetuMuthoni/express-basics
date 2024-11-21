@@ -3,19 +3,30 @@ const { router } = require("./routes/index");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const passport = require("./strategies/local-strategy");
+const cors = require("cors");
+const dotenv = require("dotenv");
 const { mockUsers } = require("./utils/data");
-const { mongoose } = require("mongoose");
+const connectDB = require("./config/database");
+const corsOptions = require("./config/corsOptions");
+
 const app = express();
+dotenv.config();
+const PORT = process.env.PORT || 3000;
 
 //middlewares
-app.use(express.json());
-mongoose
-  .connect("mongodb://localhost/express_tutorial")
-  .then(() => {
-    console.log("connected to the database");
-  })
-  .catch((err) => console.log(err));
+//cors => cross orign resource sharing
+app.use(cors(corsOptions));
 
+//for handling form data object
+app.use(express.urlencoded({ extended: false }));
+
+//for handling json data
+app.use(express.json());
+
+//for serving static files
+app.use(express.static(path.join(__dirname, "/public")));
+
+//cookies
 app.use(cookieParser());
 app.use(
   session({
@@ -29,9 +40,14 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+
+//routes
 app.use(router);
 
-const PORT = process.env.PORT || 3000;
+app.get("/", (request, response) => {
+  const file_path = path.join(__dirname, "views/home.html");
+  return response.sendFile(file_path);
+});
 
 /*================== GET REQUESTS ==================*/
 
@@ -75,4 +91,5 @@ app.get("/api/users/status", (request, response) => {
 
 app.listen(PORT, () => {
   console.log(`server is running on: http://localhost:3000`);
+  connectDB();
 });
